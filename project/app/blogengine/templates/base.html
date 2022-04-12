@@ -22,14 +22,14 @@ integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jI
     <div class="collapse navbar-collapse" id="navbarScroll">
       <ul class="navbar-nav me-auto my-2 my-lg-0 navbar-nav-scroll" style="--bs-scroll-height: 100px;">
         <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="{%url 'posts_list_url' %}">Blog</a>
+          <a class="nav-link active" aria-current="page" href="{%url 'posts_list_url' %}">Posts</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">Link</a>
+          <a class="nav-link" href="{% url 'tags_list_url' %}">Tags</a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link disabled">Link</a>
+          <a class="nav-link disabled">Disabled</a>
         </li>
       </ul>
       <form class="d-flex">
