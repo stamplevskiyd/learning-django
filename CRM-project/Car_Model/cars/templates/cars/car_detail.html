@@ -1,0 +1,14 @@
+{% extends 'cars/home_page.html' %}
+
+{% block title %}
+  {{ car.title }} - {{ block.super }}
+{% endblock %}
+
+{% block content %}
+  <h1 class="mt-5">
+    {{ car.title }}
+  </h1>
+  <p>
+    {{ "Fix this! If it is needed, not sure" }}
+  </p>
+{% endblock %}

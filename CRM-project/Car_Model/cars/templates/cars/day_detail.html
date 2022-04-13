@@ -1,0 +1,19 @@
+{% extends 'cars/home_page.html' %}
+
+{% block title %}
+  {{ day.date }} - {{ block.super }}
+{% endblock %}
+
+{% block content %}
+  <h1 class="mt-5">
+    {{ day.date }}
+  </h1>
+  <p>
+    {{ "Total expenses: " }}
+    {{ day.expenses }}
+  </p>
+  <p>
+    {{ "Total income: " }}
+    {{ day.income }}
+  </p>
+{% endblock %}

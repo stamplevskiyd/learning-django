@@ -1,0 +1,19 @@
+{% extends 'cars/home_page.html' %}
+
+{% for name in names %}
+  <p>
+    {{ name }}
+  </p>
+{% endfor %}
+
+
+{% block title %}
+  Days list
+{% endblock %}
+
+{% block content %}
+  <h1 class="mb-4">Days:</h1>
+  {% for day in days %}
+    {% include 'cars/includes/day_card_template.html'%}
+  {% endfor %}
+{% endblock %}

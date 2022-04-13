@@ -1,0 +1,19 @@
+{% extends 'cars/home_page.html' %}
+
+{% for name in names %}
+  <p>
+    {{ name }}
+  </p>
+{% endfor %}
+
+
+{% block title %}
+  Cars list
+{% endblock %}
+
+{% block content %}
+  <h1 class="mb-4">Cars:</h1>
+  {% for car in cars %}
+    {% include 'cars/includes/car_card_template.html'%}
+  {% endfor %}
+{% endblock %}

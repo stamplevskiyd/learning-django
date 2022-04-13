@@ -1,0 +1,15 @@
+<div class="card mb-4">
+  <div class="card-header">
+    {{ car.date_pub }}
+  </div>
+  <div class="card-body">
+    <h5 class="card-title">{{ car.title }}</h5>
+    <p class="card-text">{{ 'Сюда можно что-то вписать' }}</p>
+  </div>
+  <div class="card-footer text-muted">
+    Days:
+    {% for tag in car.tags.all %}
+      <a href="{{ tag.get_absolute_url }}">{{ tag.title }}</a>
+    {% endfor %}
+  </div>
+</div>
