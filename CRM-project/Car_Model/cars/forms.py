@@ -2,8 +2,8 @@ from django import forms
 from .models import *
 from django.core.exceptions import ValidationError
 
-class CarForm(forms.ModelForm):
 
+class CarForm(forms.ModelForm):
     class Meta:
         model = Car
         fields = ['title', 'slug']
@@ -24,11 +24,11 @@ class CarForm(forms.ModelForm):
 
         return new_slug
 
-class DayForm(forms.ModelForm):
 
+class DayForm(forms.ModelForm):
     class Meta:
         model = Day
-        fields = ['date', 'income', 'expenses', 'slug']
+        fields = ['slug', 'date', 'income', 'expenses']
 
         widgets = {
             'date': forms.DateTimeInput(attrs={'class': 'form-control'}),
@@ -44,14 +44,13 @@ class DayForm(forms.ModelForm):
         new_slug = self.cleaned_data['slug'].lower()
         if new_slug == 'create':
             raise ValidationError("Slug may not be 'create'")
-        if Car.objects.filter(slug__iexact=new_slug).count():
+        if Day.objects.filter(slug__iexact=new_slug).count():
             raise ValidationError('Slug must be unique. We have "{}"" slug already'.format(new_slug))
 
         return new_slug
 
 
 class MonthForm(forms.ModelForm):
-
     class Meta:
         model = Month
         fields = ['date', 'total_income', 'total_expenses', 'slug']
@@ -62,7 +61,7 @@ class MonthForm(forms.ModelForm):
             'total_expenses': forms.NumberInput(attrs={'class': 'form-control'}),
             'title': forms.TextInput(attrs={'class': 'form-control'}),
             'slug': forms.TextInput(attrs={'class': 'form-control'}),
-            #'days': Day.objects.filter(date__iexact=)
+            'days': Day.objects.filter(date__month__iexact=1)  # фильтр по месяцу. Пока - заглушка
         }
 
     def clean_slug(self):
@@ -71,7 +70,7 @@ class MonthForm(forms.ModelForm):
         new_slug = self.cleaned_data['slug'].lower()
         if new_slug == 'create':
             raise ValidationError("Slug may not be 'create'")
-        if Car.objects.filter(slug__iexact=new_slug).count():
+        if Month.objects.filter(slug__iexact=new_slug).count():
             raise ValidationError('Slug must be unique. We have "{}"" slug already'.format(new_slug))
 
         return new_slug

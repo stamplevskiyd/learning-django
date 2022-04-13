@@ -17,10 +17,11 @@ class Car(models.Model):
     title = models.CharField(max_length=100, db_index=True)
     slug = models.SlugField(max_length=150, blank=True, unique=True)
     register_date = models.DateTimeField(auto_now_add=True)
-    #income = models.IntegerField(unique=False)
-    #expenses = models.IntegerField(unique=False)
-    #days = models.ManyToManyField('Day', blank=True, related_name='days')
-    #months = models.ManyToManyField('Month', blank=True, related_name='months')
+
+    # income = models.IntegerField(unique=False)
+    # expenses = models.IntegerField(unique=False)
+    # days = models.ManyToManyField('Day', blank=True, related_name='days')
+    # months = models.ManyToManyField('Month', blank=True, related_name='months')
 
     def get_absolute_url(self):
         return reverse('car_detail_url', kwargs={'slug': self.slug})
@@ -48,7 +49,16 @@ class Day(models.Model):
     def save(self, *args, **kwargs):
         if not self.id:
             self.slug = gen_slug(self.date)
+
+        # получение нужного месяца. Осталось только связать день с ним
+
+        month = Month.objects.get(date__month__iexact=self.date.month,
+                                  date__year__iexact=self.date.year)
+
         super().save(*args, **kwargs)
+
+    def __str__(self):
+        return '{}'.format(self.date)
 
 
 class Month(models.Model):

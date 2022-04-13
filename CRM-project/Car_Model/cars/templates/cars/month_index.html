@@ -1,0 +1,12 @@
+{% extends 'cars/home_page.html' %}
+
+{% block title %}
+  Months list
+{% endblock %}
+
+{% block content %}
+  <h1 class="mb-4">Months:</h1>
+  {% for month in months %}
+    {% include 'cars/includes/month_card_template.html'%}
+  {% endfor %}
+{% endblock %}

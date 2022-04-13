@@ -1,18 +1,24 @@
 from django.shortcuts import render
 from django.views.generic import View
 
-
-from .models import Car
+from .models import *
 from .utils import *
 from .forms import CarForm, DayForm, MonthForm
+
 
 def cars_list(request):
     cars = Car.objects.all()
     return render(request, 'cars/car_index.html', context={'cars': cars})
 
+
 def days_list(request):
     days = Day.objects.all()
     return render(request, 'cars/day_index.html', context={'days': days})
+
+
+def months_list(request):
+    months = Month.objects.all()
+    return render(request, 'cars/month_index.html', context={'months': months})
 
 
 class CarDetail(ObjectDetailMixin, View):
@@ -23,6 +29,7 @@ class CarDetail(ObjectDetailMixin, View):
 class DayDetail(ObjectDetailMixin, View):
     model = Day
     template = 'cars/day_detail.html'
+
 
 class MonthDetail(ObjectDetailMixin, View):
     model = Month
@@ -37,6 +44,7 @@ class CarCreate(ObjectCreateMixin, View):
 class DayCreate(ObjectCreateMixin, View):
     form_model = DayForm
     template = 'cars/day_create_form.html'
+
 
 class MonthCreate(ObjectCreateMixin, View):
     form_model = MonthForm
