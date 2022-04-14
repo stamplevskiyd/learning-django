@@ -1,3 +1,5 @@
+import datetime
+
 from django.db import models
 from django.shortcuts import reverse
 from django.utils.text import slugify
@@ -61,13 +63,48 @@ class Car(models.Model):
         return '{}'.format(self.title)
 
 
+class Month(models.Model):
+    """Month class."""
+
+    slug = models.SlugField(max_length=150, blank=True, unique=True)
+    date = models.DateTimeField(unique=True)
+    total_income = models.IntegerField(default=0)
+    total_expenses = models.IntegerField(default=0)
+    days = models.ManyToManyField('Day', blank=True, related_name='days')
+
+    def get_absolute_url(self):
+        return reverse('month_detail_url', kwargs={'slug': self.slug})
+
+
+    def count_money(self):
+        """Sums all expenses and income from every day in this month."""
+
+        for day in self.days.all():
+            self.total_expenses += day.expenses
+            self.total_income += day.income
+
+    def save(self, *args, **kwargs):
+        """Save object."""
+        if not self.id:
+            self.slug = gen_slug(self.date)
+        super().save(*args, **kwargs)
+
+
+def create_default_month():
+    return Month.objects.get_or_create(date='2000-01-01')[0]
+
+
+def get_default_month():
+    return create_default_month().id
+
+
 class CarDailyIncome(models.Model):
     """Class for counting daily values for every car."""
 
     slug = models.SlugField(max_length=250, blank=True, unique=True)
     income = models.IntegerField(default=0)
     expenses = models.IntegerField(default=0)
-    car_slug = models.SlugField(max_length=150, blank=True, unique=True)
+    car_slug = models.SlugField(max_length=150, blank=True)
 
     def get_abcolute_url(self):
         return reverse('car_detail_url', kwargs={'slug': self.slug})
@@ -85,6 +122,8 @@ class Day(models.Model):
     total_income = models.IntegerField(default=0)
     total_expenses = models.IntegerField(default=0)
     data = models.ManyToManyField('CarDailyIncome', related_name='data')
+    month = models.ForeignKey(Month, on_delete=models.CASCADE,
+                              default=get_default_month)
 
     def get_absolute_url(self):
         return reverse('day_detail_url', kwargs={'slug': self.slug})
@@ -101,46 +140,16 @@ class Day(models.Model):
                 self.expenses += today_car.expenses
                 self.income += today_car.income
 
-
     def save(self, *args, **kwargs):
+        """Saves day object, adds it to month"""
+
         if not self.id:
             self.slug = gen_slug(self.date)
         super().save(*args, **kwargs)
+        year, month, day = str(self.date).split('-')[:3]
+        month = Month.objects.get_or_create(date__year__iexact=int(year),
+                                            date__month__iexact=int(month))[0]
+        month.days.add(self)
 
     def __str__(self):
         return '{}'.format(self.date)
-
-
-class Month(models.Model):
-    """Month class."""
-
-    slug = models.SlugField(max_length=150, blank=True, unique=True)
-    date = models.DateTimeField(unique=True)
-    total_income = models.IntegerField(default=0)
-    total_expenses = models.IntegerField(default=0)
-    days = models.ManyToManyField('Day', blank=True, related_name='days')
-
-    def get_absolute_url(self):
-        return reverse('month_detail_url', kwargs={'slug': self.slug})
-
-    def create_day(self, date_time):
-        """Create new day in this month."""
-
-        if get_month(date_time) != get_month(self.date):
-            raise ValidationError("This day does not belong to this month")
-        self.days.create(slug=gen_slug(str(date_time)), date=date_time,
-                         income=0, expenses=0)
-
-    def count_money(self):
-        """Sums all expenses and income from every day in this month."""
-
-        for day in self.days.all():
-            self.total_expenses += day.expenses
-            self.total_income += day.income
-
-    def save(self, *args, **kwargs):
-        """Save object."""
-
-        if not self.id:
-            self.slug = gen_slug(self.date)
-        super().save(*args, **kwargs)

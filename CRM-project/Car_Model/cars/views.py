@@ -3,7 +3,7 @@ from django.views.generic import View
 
 from .models import *
 from .utils import *
-from .forms import CarForm, DayForm, MonthForm
+from .forms import *
 
 
 def cars_list(request):

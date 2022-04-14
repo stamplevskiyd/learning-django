@@ -1,0 +1,19 @@
+{% extends 'cars/home_page.html' %}
+
+{% block title %}
+  {{ month.date }} - {{ block.super }}
+{% endblock %}
+
+{% block content %}
+  <h1 class="mt-5">
+    {{ month.date }}
+  </h1>
+  <p>
+    {{ "Total expenses: " }}
+    {{ month.total_expenses }}
+  </p>
+  <p>
+    {{ "Total income: " }}
+    {{ month.total_income }}
+  </p>
+{% endblock %}
