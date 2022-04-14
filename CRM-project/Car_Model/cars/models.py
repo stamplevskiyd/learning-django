@@ -38,6 +38,7 @@ class Car(models.Model):
         """Add work day to car and car detail to day object."""
 
         self.work_days.add(day)
+        self.work_months.add(day.month)
         self.total_expenses += expenses
         self.total_income += income
         self.save()
@@ -48,6 +49,8 @@ class Car(models.Model):
         obj.save()
         day.data.add(obj)
         day.save()
+        month = day.month
+        month.data.add(obj)
 
     def count_money(self):
         for day in self.work_days.all():
@@ -61,42 +64,6 @@ class Car(models.Model):
 
     def __str__(self):
         return '{}'.format(self.title)
-
-
-class Month(models.Model):
-    """Month class."""
-
-    slug = models.SlugField(max_length=150, blank=True, unique=True)
-    date = models.DateTimeField(unique=True)
-    total_income = models.IntegerField(default=0)
-    total_expenses = models.IntegerField(default=0)
-    days = models.ManyToManyField('Day', blank=True, related_name='days')
-
-    def get_absolute_url(self):
-        return reverse('month_detail_url', kwargs={'slug': self.slug})
-
-
-    def count_money(self):
-        """Sums all expenses and income from every day in this month."""
-
-        for day in self.days.all():
-            self.total_expenses += day.total_expenses
-            self.total_income += day.total_income
-        self.save()
-
-    def save(self, *args, **kwargs):
-        """Save object."""
-        if not self.id:
-            self.slug = gen_slug(self.date)
-        super().save(*args, **kwargs)
-
-
-def create_default_month():
-    return Month.objects.get_or_create(date='2000-01-01')[0]
-
-
-def get_default_month():
-    return create_default_month().id
 
 
 class CarDailyIncome(models.Model):
@@ -113,6 +80,53 @@ class CarDailyIncome(models.Model):
     def get_title(self):
         car = Car.objects.get(slug__iexact=self.slug)
         return car.title
+
+
+class Month(models.Model):
+    """Month class."""
+
+    slug = models.SlugField(max_length=150, blank=True, unique=True)
+    date = models.DateTimeField(unique=True)
+    total_income = models.IntegerField(default=0)
+    total_expenses = models.IntegerField(default=0)
+    days = models.ManyToManyField('Day', blank=True, related_name='days')
+
+    def get_absolute_url(self):
+        return reverse('month_detail_url', kwargs={'slug': self.slug})
+
+    def count_money(self):
+        """Sums all expenses and income from every day in this month."""
+
+        for day in self.days.all():
+            self.total_expenses += day.total_expenses
+            self.total_income += day.total_income
+        self.save()
+
+    def get_car_statistic(self, car):
+        """Gets statistic for one car for this month."""
+
+        income = 0
+        expenses = 0
+        days = car.work_days.filter(date__year__iexact=self.date.year, date__month__iexact=self.date.month)
+        for day in days:
+            income += day.total_income
+            expenses += day.total_expenses
+        return income, expenses, days
+
+
+    def save(self, *args, **kwargs):
+        """Save object."""
+        if not self.id:
+            self.slug = gen_slug(self.date)
+        super().save(*args, **kwargs)
+
+
+def create_default_month():
+    return Month.objects.get_or_create(date='2000-01-01')[0]
+
+
+def get_default_month():
+    return create_default_month().id
 
 
 class Day(models.Model):

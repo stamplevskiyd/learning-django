@@ -8,7 +8,15 @@
   <h1 class="mt-5">
     {{ car.title }}
   </h1>
-  <p>
-    {{ "Fix this! If it is needed, not sure" }}
+  <h3>Total income:</h3>
+    {{ car.total_income }}<br>
+  <h3>Total expenses:</h3>
+    {{ car.total_expenses }}
+  <p><br>
+    <a>Months:</a><br>
+    {% for month in car.work_months.all %}
+       <a href="{{ month.get_absolute_url }}">{{ month.date.year }} -
+        {{ month.date.month }}</a><br>
+    {% endfor %}
   </p>
 {% endblock %}

@@ -13,10 +13,14 @@
     <h6 class="card-text">{{ 'Total expenses:' }}</h6>
     <p class="card-text">{{ car.total_expenses }}</p>
   </div>
+  <div class="card-body">
+    <a href="{{ car.get_absolute_url }}" class="btn btn-light">Detail</a>
+  </div>
   <div class="card-footer text-muted">
-    Days:<br>
-    {% for day in car.work_days.all %}
-      <a href="{{ day.get_absolute_url }}">{{ day.date }}</a><br>
+    Months:<br>
+    {% for month in car.work_months.all %}
+      <a href="{{ month.get_absolute_url }}">{{ month.date.year }} -
+        {{ month.date.month }}</a><br>
     {% endfor %}
   </div>
 </div>

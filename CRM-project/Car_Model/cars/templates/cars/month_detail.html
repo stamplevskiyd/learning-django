@@ -6,14 +6,20 @@
 
 {% block content %}
   <h1 class="mt-5">
-    {{ month.date }}
+    {{ month.date.month }}.{{ month.date.year }}
   </h1>
-  <p>
-    {{ "Total expenses: " }}
-    {{ month.total_expenses }}
-  </p>
   <p>
     {{ "Total income: " }}
     {{ month.total_income }}
   </p>
+   <p>
+    {{ "Total expenses: " }}
+    {{ month.total_expenses }}
+  </p>
+  <h3>Days:<br></h3>
+  {% for day in month.days.all %}
+    <a href="{{ day.get_absolute_url }}">{{ day.date }}</a><br>
+    <h6>Total by day:<br></h6>
+        {% include 'cars/includes/day_card_template.html'%}
+  {% endfor %}
 {% endblock %}
