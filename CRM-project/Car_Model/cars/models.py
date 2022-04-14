@@ -80,8 +80,9 @@ class Month(models.Model):
         """Sums all expenses and income from every day in this month."""
 
         for day in self.days.all():
-            self.total_expenses += day.expenses
-            self.total_income += day.income
+            self.total_expenses += day.total_expenses
+            self.total_income += day.total_income
+        self.save()
 
     def save(self, *args, **kwargs):
         """Save object."""
@@ -141,15 +142,16 @@ class Day(models.Model):
                 self.income += today_car.income
 
     def save(self, *args, **kwargs):
-        """Saves day object, adds it to month"""
+        """Saves day object, adds it to month.
+
+        Can create new month if needed."""
 
         if not self.id:
             self.slug = gen_slug(self.date)
         super().save(*args, **kwargs)
         year = self.date.year
         month = self.date.month
-        m = Month.objects.filter(date__year__iexact=year,
-                                 date__month__iexact=month)
+        m = Month.objects.filter(date__year__iexact=year, date__month__iexact=month)
         if not m:
             m = Month.objects.get_or_create(date=datetime.date(year, month, 1))
         m[0].days.add(self)
