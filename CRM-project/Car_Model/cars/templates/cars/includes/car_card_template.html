@@ -4,12 +4,13 @@
   </div>
   <div class="card-body">
     <h5 class="card-title">{{ car.title }}</h5>
-    <p class="card-text">{{ 'Сюда можно что-то вписать' }}</p>
+    <p class="card-text">{{ 'Register date:' }}</p><br>
+    <p class="card-text">{{ car.register_date }}</p>
   </div>
   <div class="card-footer text-muted">
-    Days:
-    {% for tag in car.tags.all %}
-      <a href="{{ tag.get_absolute_url }}">{{ tag.title }}</a>
+    Days:<br>
+    {% for day in car.work_days.all %}
+      <a href="{{ day.get_absolute_url }}">{{ day.date }}</a><br>
     {% endfor %}
   </div>
 </div>
