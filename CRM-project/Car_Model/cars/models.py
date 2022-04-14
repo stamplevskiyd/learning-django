@@ -23,17 +23,34 @@ class Car(models.Model):
 
     title = models.CharField(max_length=100, db_index=True)
     slug = models.SlugField(max_length=150, blank=True, unique=True)
-    register_date = models.DateTimeField()
-    income = models.IntegerField(unique=False, default=0)
-    expenses = models.IntegerField(unique=False, default=0)
-    work_days = models.ManyToManyField('Day', blank=True, related_name='work_days')
-    months = models.ManyToManyField('Month', blank=True, related_name='work_months')
+    register_date = models.DateTimeField(blank=False)
+    total_income = models.IntegerField(unique=False, default=0)
+    total_expenses = models.IntegerField(unique=False, default=0)
+    work_days = models.ManyToManyField('Day', related_name='work_days')
+    work_months = models.ManyToManyField('Month', related_name='work_months')
 
     def get_absolute_url(self):
         return reverse('car_detail_url', kwargs={'slug': self.slug})
 
-    def add_day(self, day):
+    def add_day(self, day, income, expenses):
+        """Add work day to car and car detail to day object."""
+
         self.work_days.add(day)
+        self.total_expenses += expenses
+        self.total_income += income
+        self.save()
+        day.total_expenses += expenses
+        day.total_income += income
+        obj = CarDailyIncome(slug=self.slug + day.slug, car_slug=self.slug,
+                             income=income, expenses=expenses)
+        obj.save()
+        day.data.add(obj)
+        day.save()
+
+    def count_money(self):
+        for day in self.work_days.all():
+            self.total_income += day.income
+            self.total_expenses += day.expenses
 
     def save(self, *args, **kwargs):
         if not self.id:
@@ -44,13 +61,30 @@ class Car(models.Model):
         return '{}'.format(self.title)
 
 
+class CarDailyIncome(models.Model):
+    """Class for counting daily values for every car."""
+
+    slug = models.SlugField(max_length=250, blank=True, unique=True)
+    income = models.IntegerField(default=0)
+    expenses = models.IntegerField(default=0)
+    car_slug = models.SlugField(max_length=150, blank=True, unique=True)
+
+    def get_abcolute_url(self):
+        return reverse('car_detail_url', kwargs={'slug': self.slug})
+
+    def get_title(self):
+        car = Car.objects.get(slug__iexact=self.slug)
+        return car.title
+
+
 class Day(models.Model):
     """Day class."""
 
     slug = models.SlugField(max_length=150, blank=True, unique=True)
     date = models.DateTimeField(unique=True)  # оставим пока без auto_now_date
-    income = models.IntegerField(default=0)
-    expenses = models.IntegerField(default=0)
+    total_income = models.IntegerField(default=0)
+    total_expenses = models.IntegerField(default=0)
+    data = models.ManyToManyField('CarDailyIncome', related_name='data')
 
     def get_absolute_url(self):
         return reverse('day_detail_url', kwargs={'slug': self.slug})
@@ -62,6 +96,7 @@ class Day(models.Model):
         for car in cars:
             days = car.work_days.all()
             if self in days:
+                self.cars.add(car)
                 today_car = car.work_days.get(date__iexact=self.date)
                 self.expenses += today_car.expenses
                 self.income += today_car.income

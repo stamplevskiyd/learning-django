@@ -3,9 +3,18 @@
     {{ day.date }}
   </div>
   <div class="card-body">
-    <h5 class="card-title">{{ 'Total expenses' }}</h5>
-    <p class="card-text">{{ day.expenses }}</p>
     <h5 class="card-title">{{ 'Total income' }}</h5>
-    <p class="card-text">{{ day.income }}</p>
+    <p class="card-text">{{ day.total_income }}</p>
+    <h5 class="card-title">{{ 'Total expenses' }}</h5>
+    <p class="card-text">{{ day.total_expenses }}</p>
+  </div>
+  <div class="card-footer text-muted">
+    <h3>Cars:</h3>
+    {% for car in day.data.all %}
+      <a href="{{ car.get_absolute_url }}">{{ car.car_slug }}</a><br>
+      <a>{{ 'Car income:' }}<br>{{ car.income }}</a><br>
+      <a>{{'Car expenses:'}}<br>{{ car.expenses }}</a><br>
+      <br>
+    {% endfor %}
   </div>
 </div>

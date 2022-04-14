@@ -6,11 +6,11 @@ from django.core.exceptions import ValidationError
 class CarForm(forms.ModelForm):
     class Meta:
         model = Car
-        fields = ['title', 'slug']
+        fields = ['title', 'register_date']
 
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control'}),
-            'slug': forms.TextInput(attrs={'class': 'form-control'})
+            'register_date': forms.TextInput(attrs={'class': 'form-control'})
         }
 
     def clean_slug(self):
@@ -28,14 +28,10 @@ class CarForm(forms.ModelForm):
 class DayForm(forms.ModelForm):
     class Meta:
         model = Day
-        fields = ['slug', 'date', 'income', 'expenses']
+        fields = ['date']
 
         widgets = {
             'date': forms.DateTimeInput(attrs={'class': 'form-control'}),
-            'income': forms.NumberInput(attrs={'class': 'form-control'}),
-            'expenses': forms.NumberInput(attrs={'class': 'form-control'}),
-            'title': forms.TextInput(attrs={'class': 'form-control'}),
-            'slug': forms.TextInput(attrs={'class': 'form-control'}),
         }
 
     def clean_slug(self):
@@ -53,15 +49,10 @@ class DayForm(forms.ModelForm):
 class MonthForm(forms.ModelForm):
     class Meta:
         model = Month
-        fields = ['date', 'total_income', 'total_expenses', 'slug']
+        fields = ['date']
 
         widgets = {
             'date': forms.DateTimeInput(attrs={'class': 'form-control'}),
-            'total_income': forms.NumberInput(attrs={'class': 'form-control'}),
-            'total_expenses': forms.NumberInput(attrs={'class': 'form-control'}),
-            'title': forms.TextInput(attrs={'class': 'form-control'}),
-            'slug': forms.TextInput(attrs={'class': 'form-control'}),
-            'days': Day.objects.filter(date__month__iexact=1)  # фильтр по месяцу. Пока - заглушка
         }
 
     def clean_slug(self):
