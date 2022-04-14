@@ -49,3 +49,39 @@ class DayCreate(ObjectCreateMixin, View):
 class MonthCreate(ObjectCreateMixin, View):
     form_model = MonthForm
     template = 'cars/month_create_form.html'
+
+
+class CarEdit(ObjectEditMixin, View):
+    model = Car
+    model_form = CarForm
+    template = 'cars/car_edit_form.html'
+
+
+class DayEdit(ObjectEditMixin, View):
+    model = Day
+    model_form = DayEditForm
+    template = 'cars/day_edit_form.html'
+
+    def get(self, request, slug):
+        obj = self.model.objects.get(slug__iexact=slug)
+        bound_form = self.model_form(instance=obj)
+        return render(request, self.template,
+                      context={'form': bound_form, self.model.__name__.lower(): obj})
+
+    def post(self, request, slug):
+        obj = self.model.objects.get(slug__iexact=slug)
+        bound_form = self.model_form(request.POST, instance=obj)
+        initial_income = obj.total_income
+        initial_expenses = obj.total_expenses
+        new_income = int(request.POST['total_income'])
+        new_expences = int(request.POST['total_expenses'])
+        obj.month.total_income += (new_income - initial_income)
+        obj.month.total_expenses += (new_expences - initial_expenses)
+        print(new_expences, new_income)
+        obj.month.save()
+        obj.save()
+        if bound_form.is_valid():
+            new_obj = bound_form.save()
+            return redirect(new_obj)
+        return render(request, self.template, context={'form': bound_form,
+                                                       self.model.__name__.lower(): obj})

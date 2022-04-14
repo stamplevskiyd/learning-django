@@ -9,9 +9,12 @@
     <p class="card-text">{{ day.total_expenses }}</p>
   </div>
   <div class="card-footer text-muted">
+    <div class="card-body">
+      <a href="{{ day.get_absolute_url }}" class="btn btn-dark">Detail</a>
+    </div>
     <h3>Cars:</h3>
     {% for car in day.data.all %}
-      <a href="{{ car.get_absolute_url }}">{{ car.car_slug }}</a><br>
+      <h3>{{ car.title }}</h3><br>
       <a>{{ 'Car income:' }}<br>{{ car.income }}</a><br>
       <a>{{'Car expenses:'}}<br>{{ car.expenses }}</a><br>
       <br>

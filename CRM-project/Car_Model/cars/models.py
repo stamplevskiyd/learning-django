@@ -34,6 +34,10 @@ class Car(models.Model):
     def get_absolute_url(self):
         return reverse('car_detail_url', kwargs={'slug': self.slug})
 
+    def get_update_url(self):
+        return reverse('car_edit_url', kwargs={'slug': self.slug})
+
+
     def add_day(self, day, income, expenses):
         """Add work day to car and car detail to day object."""
 
@@ -45,7 +49,7 @@ class Car(models.Model):
         day.total_expenses += expenses
         day.total_income += income
         obj = CarDailyIncome(slug=self.slug + day.slug, car_slug=self.slug,
-                             income=income, expenses=expenses)
+                             income=income, expenses=expenses, title=self.title)
         obj.save()
         day.data.add(obj)
         day.save()
@@ -73,13 +77,10 @@ class CarDailyIncome(models.Model):
     income = models.IntegerField(default=0)
     expenses = models.IntegerField(default=0)
     car_slug = models.SlugField(max_length=150, blank=True)
+    title = models.CharField(max_length=150, blank=True, unique=False)
 
     def get_abcolute_url(self):
-        return reverse('car_detail_url', kwargs={'slug': self.slug})
-
-    def get_title(self):
-        car = Car.objects.get(slug__iexact=self.slug)
-        return car.title
+        return reverse('Car.car_detail_url', kwargs={'slug': self.slug})
 
 
 class Month(models.Model):
@@ -143,6 +144,9 @@ class Day(models.Model):
     def get_absolute_url(self):
         return reverse('day_detail_url', kwargs={'slug': self.slug})
 
+    def get_update_url(self):
+        return reverse('day_edit_url', kwargs={'slug': self.slug})
+
     def count_money(self):
         """Counts money earned by every car this day."""
 
@@ -168,7 +172,9 @@ class Day(models.Model):
         m = Month.objects.filter(date__year__iexact=year, date__month__iexact=month)
         if not m:
             m = Month.objects.get_or_create(date=datetime.date(year, month, 1))
+        self.month = m[0]
         m[0].days.add(self)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return '{}'.format(self.date)

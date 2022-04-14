@@ -65,3 +65,25 @@ class MonthForm(forms.ModelForm):
             raise ValidationError('Slug must be unique. We have "{}"" slug already'.format(new_slug))
 
         return new_slug
+
+
+class DayEditForm(forms.ModelForm):
+    class Meta:
+        model = Day
+        fields = ['total_income', 'total_expenses']
+
+        widgets = {
+            'total_income': forms.DateTimeInput(attrs={'class': 'form-control'}),
+            'total_expenses': forms.DateTimeInput(attrs={'class': 'form-control'}),
+        }
+
+    def clean_slug(self):
+        """May be needs rewriting"""
+
+        new_slug = self.cleaned_data['slug'].lower()
+        if new_slug == 'create':
+            raise ValidationError("Slug may not be 'create'")
+        if Day.objects.filter(slug__iexact=new_slug).count():
+            raise ValidationError('Slug must be unique. We have "{}"" slug already'.format(new_slug))
+
+        return new_slug
