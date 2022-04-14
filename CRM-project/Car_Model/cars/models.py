@@ -146,10 +146,13 @@ class Day(models.Model):
         if not self.id:
             self.slug = gen_slug(self.date)
         super().save(*args, **kwargs)
-        year, month, day = str(self.date).split('-')[:3]
-        month = Month.objects.get_or_create(date__year__iexact=int(year),
-                                            date__month__iexact=int(month))[0]
-        month.days.add(self)
+        year = self.date.year
+        month = self.date.month
+        m = Month.objects.filter(date__year__iexact=year,
+                                 date__month__iexact=month)
+        if not m:
+            m = Month.objects.get_or_create(date=datetime.date(year, month, 1))
+        m[0].days.add(self)
 
     def __str__(self):
         return '{}'.format(self.date)
