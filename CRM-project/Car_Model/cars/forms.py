@@ -26,16 +26,6 @@ class DayForm(forms.ModelForm):
         }
 
 
-class MonthForm(forms.ModelForm):
-    class Meta:
-        model = Month
-        fields = ['date']
-
-        widgets = {
-            'date': forms.DateTimeInput(attrs={'class': 'form-control'}),
-        }
-
-
 class DayEditForm(forms.ModelForm):
     class Meta:
         model = Day
@@ -44,4 +34,14 @@ class DayEditForm(forms.ModelForm):
         widgets = {
             'income': forms.DateTimeInput(attrs={'class': 'form-control'}),
             'expenses': forms.DateTimeInput(attrs={'class': 'form-control'}),
+        }
+
+
+class MonthForm(forms.ModelForm):
+    class Meta:
+        model = Month
+        fields = ['date']
+
+        widgets = {
+            'date': forms.DateTimeInput(attrs={'class': 'form-control'}),
         }

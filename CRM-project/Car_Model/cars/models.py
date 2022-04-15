@@ -36,8 +36,19 @@ class Car(models.Model):
     def get_update_url(self):
         return reverse('car_edit_url', kwargs={'id': self.id})
 
-    #def add_day(self, day, income, expenses):
-    #    month = self.month_set.get_or_create()
+    def recount(self):
+        self.total_income = 0
+        self.total_expenses = 0
+        for month in self.month_set.all():
+            month.total_income = 0
+            month.total_expenses = 0
+            for day in month.day_set.all():
+                month.total_income += day.income
+                month.total_expenses += day.expenses
+            month.save()
+            self.total_expenses += month.total_expenses
+            self.total_income += month.total_income
+        self.save()
 
     def __str__(self):
         return '{}'.format(self.title)
