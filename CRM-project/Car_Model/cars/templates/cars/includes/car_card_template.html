@@ -6,18 +6,6 @@
     <h5 class="card-title">{{ car.title }}</h5>
     <h6 class="card-text">{{ 'Register date:' }}</h6>
     <p class="card-text">{{ car.register_date }}</p>
-
-    <h6 class="card-text">{{ 'Total income:' }}</h6>
-    <p class="card-text">{{ car.total_income }}</p>
-
-    <h6 class="card-text">{{ 'Total expenses:' }}</h6>
-    <p class="card-text">{{ car.total_expenses }}</p>
-
-    <h6 class="card-text">{{ 'Total amortization:' }}</h6>
-    <p class="card-text">{{ car.total_amortization }}</p>
-
-    <h6 class="card-text">{{ 'Total profit:' }}</h6>
-    <p class="card-text">{{ car.total_profit }}</p>
   </div>
   <div class="card-body">
     <a href="{{ car.get_absolute_url }}" class="btn btn-light">Detail</a>

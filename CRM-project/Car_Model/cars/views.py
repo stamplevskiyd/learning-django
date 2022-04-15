@@ -78,7 +78,6 @@ class CarCreate(View):
 
 class DayCreate(View):
     """Adds day to required car.
-
     Can create new month if needed.
     """
 
@@ -167,9 +166,12 @@ class AmortizationCreate(View):
         return render(request, self.template, context={'form': form, 'id': id})
 
     def post(self, request, id):
+        car = Car.objects.get(id=id)
         bound_form = AmortizationForm(request.POST)
         if bound_form.is_valid():
             new_obj = bound_form.save()
+            new_obj.car = car
+            new_obj.save()
             return redirect(new_obj)
         return render(request, self.template, context={'form': bound_form})
 
