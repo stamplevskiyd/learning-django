@@ -39,6 +39,8 @@ class Car(models.Model):
         for month in self.month_set.all():
             month.total_income = 0
             month.total_expenses = 0
+            month.total_amortization = 0
+            month.total_profit = 0
             for day in month.day_set.all():
                 day.amortization = 0
                 day.profit = 0
@@ -93,6 +95,7 @@ class Day(models.Model):
     def save(self, *args, **kwargs):
         """Saves day object, adds it to month.
         Can create new month if needed."""
+
         month = self.month
         if not month.day_set.filter(id=self.id):
             """Creating new day object."""
@@ -123,8 +126,6 @@ class Amortization(models.Model):
     def get_absolute_url(self):
         return reverse('amortization_detail_url', kwargs={'id': self.id})
 
-    #@receiver(sender=)
     def save(self, *args, **kwargs):
         """Saves amortization object, adds it to car."""
-
         super().save(*args, **kwargs)
