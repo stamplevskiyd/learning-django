@@ -58,6 +58,25 @@ class Car(models.Model):
             month.total_profit = month.total_income - month.total_expenses - month.total_amortization
             month.save()
 
+    def recount_amortization(self):
+        for month in self.month_set.all():
+            month.total_amortization = 0
+            month.total_profit = 0
+            for day in month.day_set.all():
+                day.amortization = 0
+                day.profit = 0
+                for am in self.amortization_set.all():
+                    day_count = 0
+                    for m in self.month_set.all():
+                        day_count += m.day_set.filter(date__gte=am.start_date, date__lt=am.end_date).count()
+                    if am.start_date <= day.date < am.end_date:
+                        day.amortization += am.money // day_count
+                day.profit = day.income - day.expenses - day.amortization
+                day.save()
+                month.total_amortization += day.amortization
+            month.total_profit = month.total_income - month.total_expenses - month.total_amortization
+            month.save()
+
     def __str__(self):
         return '{}'.format(self.title)
 
@@ -126,6 +145,5 @@ class Amortization(models.Model):
     def get_absolute_url(self):
         return reverse('amortization_detail_url', kwargs={'id': self.id})
 
-    def save(self, *args, **kwargs):
-        """Saves amortization object, adds it to car."""
-        super().save(*args, **kwargs)
+    def get_delete_url(self):
+        return reverse('amortization_delete_url', kwargs={'id': self.id})

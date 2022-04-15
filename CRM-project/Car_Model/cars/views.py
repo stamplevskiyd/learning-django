@@ -96,7 +96,7 @@ class DayCreate(View):
             new_obj = bound_form.save()
             new_obj.month = post_month
             new_obj.save()
-            car.recount()
+            car.recount_amortization()
             return redirect(new_obj)
         return render(request, self.template, context={'form': bound_form})
 
@@ -186,3 +186,20 @@ class AmortizationDetail(View):
     def get(self, request, id):
         obj = get_object_or_404(Amortization, id=id)
         return render(request, self.template, context={'amortization': obj})
+
+
+class AmortizationDelete(View):
+    model = Amortization
+    template = 'cars/amortization_delete_form.html'
+    redirect_url = 'cars_list_url'
+
+    def get(self, request, id):
+        obj = self.model.objects.get(id=id)
+        return render(request, self.template, context={'amortization': obj})
+
+    def post(self, request, id):
+        obj = Amortization.objects.get(id=id)
+        car = obj.car
+        obj.delete()
+        car.recount_amortization()
+        return redirect(reverse(self.redirect_url))

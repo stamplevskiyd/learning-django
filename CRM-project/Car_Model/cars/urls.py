@@ -5,6 +5,7 @@ from .views import *
 urlpatterns = [
     path('', cars_list, name='cars_list_url'),
     path('amortization/<int:id>', AmortizationDetail.as_view(), name='amortization_detail_url'),
+    path('amortization/<int:id>/delete', AmortizationDelete.as_view(), name='amortization_detail_url'),
     path('cars/', cars_list, name='cars_list_url'),  # по дефолту пусть открывается страница с машинами
     path('days/', days_list, name='days_list_url'),
     path('months/', months_list, name='months_list_url'),

@@ -1,0 +1,14 @@
+{% extends 'cars/home_page.html' %}
+
+{% block title %}
+  Delete Amortization "{{ amortization }}" - {{ block.super }}
+{% endblock %}
+
+{% block content %}
+  <form action="{{ tag.get_delete_url }}"method="post">
+    {% csrf_token %}
+    <h3>Are you sure you want to delete it</h3>
+    <a href="{{ amortization.get_absolute_url }}">Cancel</a>
+    <button type="submit" name="button" class="btn btn-danger">Delete</button>
+  </form>
+{% endblock %}
