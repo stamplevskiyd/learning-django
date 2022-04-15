@@ -22,6 +22,14 @@ def get_default_car():
     return create_default_car().id
 
 
+def create_default_amortization():
+    return Amortization.objects.get_or_create(start_date='2000-01-01', end_date='2000-01-01')[0]
+
+
+def get_default_amortization():
+    return create_default_amortization().id
+
+
 class Car(models.Model):
     """Basic class for car model"""
 
@@ -29,6 +37,8 @@ class Car(models.Model):
     register_date = models.DateField(blank=False)
     total_income = models.IntegerField(unique=False, default=0)
     total_expenses = models.IntegerField(unique=False, default=0)
+    total_amortization = models.IntegerField(unique=False, default=0)
+    total_profit = models.IntegerField(unique=False, default=0)
 
     def get_absolute_url(self):
         return reverse('car_detail_url', kwargs={'id': self.id})
@@ -60,6 +70,8 @@ class Month(models.Model):
     date = models.DateField(unique=True)
     total_income = models.IntegerField(default=0)
     total_expenses = models.IntegerField(default=0)
+    total_amortization = models.IntegerField(default=0)
+    total_profit = models.IntegerField(default=0)
     car = models.ForeignKey(Car, on_delete=models.CASCADE, default=get_default_car)
 
     def get_absolute_url(self):
@@ -72,6 +84,7 @@ class Day(models.Model):
     date = models.DateField(unique=True)
     income = models.IntegerField(default=0)
     expenses = models.IntegerField(default=0)
+    amortization = models.IntegerField(default=0)
     month = models.ForeignKey(Month, on_delete=models.CASCADE, default=get_default_month)
 
     def get_absolute_url(self):
@@ -84,15 +97,34 @@ class Day(models.Model):
         """Saves day object, adds it to month.
         Can create new month if needed."""
 
-        super().save(*args, **kwargs)
         month = Month.objects.get(date=datetime.date(self.date.year, self.date.month, 1))
-        month.day_set.add(self)
-        month.total_expenses += self.expenses
-        month.total_income += self.income
-        month.car.total_expenses += self.expenses
-        month.car.total_income += self.income
+        if not month.day_set.filter(id=self.id):
+            """Creating new day object."""
+            super().save(*args, **kwargs)
+            month.day_set.add(self)
+            month.total_expenses += self.expenses
+            month.total_income += self.income
+            month.car.total_expenses += self.expenses
+            month.car.total_income += self.income
+        else:
+            """Modifying already added day."""
+            day = month.day_set.get(id=self.id)
+            month.total_expenses += self.expenses - day.expenses
+            month.total_income += self.income - day.income
+            month.car.total_expenses += self.expenses - day.expenses
+            month.car.total_income += self.income - day.income
+            super().save(*args, **kwargs)
         month.save()
         month.car.save()
 
     def __str__(self):
         return '{}'.format(self.date)
+
+
+class Amortization(models.Model):
+    """Amortization class."""
+
+    start_date = models.DateField()
+    end_date = models.DateField()
+    money = models.IntegerField(default=0)
+    car = models.ForeignKey(Car, on_delete=models.CASCADE, default=get_default_amortization)

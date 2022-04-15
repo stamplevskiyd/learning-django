@@ -135,20 +135,7 @@ class DayEdit(View):
     def post(self, request, id):
         obj = Day.objects.get(id=id)
         bound_form = DayEditForm(request.POST, instance=obj)
-        new_income = int(request.POST['income'])
-        new_expences = int(request.POST['expenses'])
-        initial_income = obj.income
-        initial_expenses = obj.expenses
-        # день сохранится и добавит их
-        obj.month.total_income -= initial_income
-        obj.month.total_expenses -= initial_expenses
-        obj.month.car.total_income -= initial_income
-        obj.month.car.total_expenses -= initial_expenses
-        obj.month.save()
-        obj.month.car.save()
         if bound_form.is_valid():
             new_obj = bound_form.save()
-            new_obj.income = new_income
-            new_obj.expenses = new_expences
             return redirect(new_obj)
         return render(request, self.template, context={'form': bound_form, 'day': obj})
