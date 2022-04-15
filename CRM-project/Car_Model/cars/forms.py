@@ -45,3 +45,15 @@ class MonthForm(forms.ModelForm):
         widgets = {
             'date': forms.DateTimeInput(attrs={'class': 'form-control'}),
         }
+
+
+class AmortizationForm(forms.ModelForm):
+    class Meta:
+        model = Amortization
+        fields = ['start_date', 'end_date', 'money']
+
+        widgets = {
+            'start_date': forms.DateTimeInput(attrs={'class': 'form-control'}),
+            'end_day': forms.DateTimeInput(attrs={'class': 'form-control'}),
+            'money': forms.DateTimeInput(attrs={'class': 'form-control'}),
+        }

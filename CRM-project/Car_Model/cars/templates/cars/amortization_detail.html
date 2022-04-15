@@ -1,0 +1,24 @@
+{% extends 'cars/home_page.html' %}
+
+{% block title %}
+  {{ amortization.date }} - {{ block.super }}
+{% endblock %}
+
+{% block content %}
+   <h1 class="mt-5">
+     {{ 'Car:' }}
+     {{ amortization.car }}
+  </h1>
+  <p>
+    {{ "Start date: " }}
+    {{ amortization.start_date }}
+  </p>
+  <p>
+    {{ "End date: " }}
+    {{ amortization.end_date }}
+  </p>
+  <p>
+    {{ "Money: " }}
+    {{ amortization.money }}
+  </p>
+{% endblock %}

@@ -12,6 +12,12 @@
 
     <h6 class="card-text">{{ 'Total expenses:' }}</h6>
     <p class="card-text">{{ car.total_expenses }}</p>
+
+    <h6 class="card-text">{{ 'Total amortization:' }}</h6>
+    <p class="card-text">{{ car.total_amortization }}</p>
+
+    <h6 class="card-text">{{ 'Total profit:' }}</h6>
+    <p class="card-text">{{ car.total_profit }}</p>
   </div>
   <div class="card-body">
     <a href="{{ car.get_absolute_url }}" class="btn btn-light">Detail</a>
@@ -21,6 +27,13 @@
     {% for month in car.month_set.all %}
       <a href="{{ month.get_absolute_url }}">{{ month.date.year }} -
         {{ month.date.month }}</a><br>
+    {% endfor %}
+  </div>
+  <div class="card-footer text-muted">
+    Amortizations:<br>
+    {% for am in car.amortization_set.all %}
+      <a href="{{ am.get_absolute_url }}">{{ am.start_date }} -
+        {{ am.end_date }}</a><br>
     {% endfor %}
   </div>
 </div>

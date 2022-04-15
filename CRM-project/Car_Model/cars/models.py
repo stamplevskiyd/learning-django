@@ -22,14 +22,6 @@ def get_default_car():
     return create_default_car().id
 
 
-def create_default_amortization():
-    return Amortization.objects.get_or_create(start_date='2000-01-01', end_date='2000-01-01')[0]
-
-
-def get_default_amortization():
-    return create_default_amortization().id
-
-
 class Car(models.Model):
     """Basic class for car model"""
 
@@ -67,7 +59,7 @@ class Car(models.Model):
 class Month(models.Model):
     """Month class."""
 
-    date = models.DateField(unique=True)
+    date = models.DateField(unique=False)
     total_income = models.IntegerField(default=0)
     total_expenses = models.IntegerField(default=0)
     total_amortization = models.IntegerField(default=0)
@@ -81,7 +73,7 @@ class Month(models.Model):
 class Day(models.Model):
     """Day class."""
 
-    date = models.DateField(unique=True)
+    date = models.DateField(unique=False)
     income = models.IntegerField(default=0)
     expenses = models.IntegerField(default=0)
     amortization = models.IntegerField(default=0)
@@ -96,8 +88,8 @@ class Day(models.Model):
     def save(self, *args, **kwargs):
         """Saves day object, adds it to month.
         Can create new month if needed."""
-
-        month = Month.objects.get(date=datetime.date(self.date.year, self.date.month, 1))
+        month = self.month
+        print(self.month)
         if not month.day_set.filter(id=self.id):
             """Creating new day object."""
             super().save(*args, **kwargs)
@@ -127,4 +119,26 @@ class Amortization(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
     money = models.IntegerField(default=0)
-    car = models.ForeignKey(Car, on_delete=models.CASCADE, default=get_default_amortization)
+    car = models.ForeignKey(Car, on_delete=models.CASCADE, default=get_default_car)
+
+    def get_absolute_url(self):
+        return reverse('amortization_detail_url', kwargs={'id': self.id})
+
+    def save(self, *args, **kwargs):
+        """Saves amortization object, adds it to car."""
+
+        super().save(*args, **kwargs)
+        car = Car.objects.get(id=self.car.id)  # есть всегда. Хотя бы default car
+        car.total_amortization += self.money
+        objects = []
+        for month in car.month_set.all():
+            objects.append(month.day_set.filter(date__gte=self.start_date, date__lt=self.end_date))
+        days = 0
+        for obj in objects:
+            days += len(obj)
+        print(days)
+        print(objects)
+        #for month in car.month_list:
+        #    days += len(month.day_list.all)
+        #amortization_by_day = self.money // len(car.day_list.all)
+        car.save()

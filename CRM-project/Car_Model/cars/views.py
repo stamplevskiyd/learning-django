@@ -7,7 +7,7 @@ from .models import *
 from .forms import *
 
 
-def create_month(date: str):
+def count_month(date: str):
     """Creates month record from standard date"""
 
     year, month, day = date.split('-')[:3]
@@ -30,6 +30,8 @@ def months_list(request):
 
 
 class CarDetail(View):
+    """Car statistics."""
+
     template = 'cars/car_detail.html'
 
     def get(self, request, id):
@@ -38,6 +40,8 @@ class CarDetail(View):
 
 
 class DayDetail(View):
+    """Day statistics."""
+
     template = 'cars/day_detail.html'
 
     def get(self, request, id):
@@ -46,6 +50,8 @@ class DayDetail(View):
 
 
 class MonthDetail(View):
+    """Month statistics."""
+
     template = 'cars/month_detail.html'
 
     def get(self, request, id):
@@ -54,6 +60,8 @@ class MonthDetail(View):
 
 
 class CarCreate(View):
+    """Creating new car."""
+
     template = 'cars/car_create_form.html'
 
     def get(self, request):
@@ -69,7 +77,10 @@ class CarCreate(View):
 
 
 class DayCreate(View):
-    """Adds day to required car"""
+    """Adds day to required car.
+
+    Can create new month if needed.
+    """
 
     template = 'cars/day_create_form.html'
 
@@ -80,10 +91,12 @@ class DayCreate(View):
     def post(self, request, id):
         car = Car.objects.get(id=id)
         date = request.POST['date']
-        post_month = car.month_set.get_or_create(date=create_month(date))[0]
+        post_month = car.month_set.get_or_create(date=count_month(date))[0]
         bound_form = DayForm(request.POST)
         if bound_form.is_valid():
             new_obj = bound_form.save()
+            new_obj.month = post_month
+            new_obj.save()
             return redirect(new_obj)
         return render(request, self.template, context={'form': bound_form})
 
@@ -139,3 +152,33 @@ class DayEdit(View):
             new_obj = bound_form.save()
             return redirect(new_obj)
         return render(request, self.template, context={'form': bound_form, 'day': obj})
+
+
+class AmortizationCreate(View):
+    """Adds one more amortization to required car.
+
+    Always creates new.
+    """
+
+    template = 'cars/amortization_create_form.html'
+
+    def get(self, request, id):
+        form = AmortizationForm()
+        return render(request, self.template, context={'form': form, 'id': id})
+
+    def post(self, request, id):
+        bound_form = AmortizationForm(request.POST)
+        if bound_form.is_valid():
+            new_obj = bound_form.save()
+            return redirect(new_obj)
+        return render(request, self.template, context={'form': bound_form})
+
+
+class AmortizationDetail(View):
+    """Day statistics."""
+
+    template = 'cars/amortization_detail.html'
+
+    def get(self, request, id):
+        obj = get_object_or_404(Amortization, id=id)
+        return render(request, self.template, context={'amortization': obj})

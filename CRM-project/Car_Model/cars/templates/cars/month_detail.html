@@ -15,9 +15,13 @@
     {{ "Total income: " }}
     {{ month.total_income }}
   </p>
-   <p>
+  <p>
     {{ "Total expenses: " }}
     {{ month.total_expenses }}
+  </p>
+   <p>
+    {{ "Total profit: " }}
+    {{ month.total_profit }}
   </p>
   <h3>Days:<br></h3>
   {% for day in month.day_set.all %}
