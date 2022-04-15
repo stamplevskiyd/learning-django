@@ -1,9 +1,17 @@
 from django.shortcuts import render
+from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404
 from django.views.generic import View
 
 from .models import *
-from .utils import *
 from .forms import *
+
+
+def create_month(date: str):
+    """Creates month record from standard date"""
+
+    year, month, day = date.split('-')[:3]
+    return year + '-' + month + '-01'
 
 
 def cars_list(request):
@@ -21,56 +29,112 @@ def months_list(request):
     return render(request, 'cars/month_index.html', context={'months': months})
 
 
-class CarDetail(ObjectDetailMixin, View):
-    model = Car
+class CarDetail(View):
     template = 'cars/car_detail.html'
 
+    def get(self, request, id):
+        obj = get_object_or_404(Car, id=id)
+        return render(request, self.template, context={'car': obj})
 
-class DayDetail(ObjectDetailMixin, View):
-    model = Day
+
+class DayDetail(View):
     template = 'cars/day_detail.html'
 
+    def get(self, request, id):
+        obj = get_object_or_404(Day, id=id)
+        return render(request, self.template, context={'day': obj})
 
-class MonthDetail(ObjectDetailMixin, View):
-    model = Month
+
+class MonthDetail(View):
     template = 'cars/month_detail.html'
 
+    def get(self, request, id):
+        obj = get_object_or_404(Month, id=id)
+        return render(request, self.template, context={'month': obj})
 
-class CarCreate(ObjectCreateMixin, View):
-    form_model = CarForm
+
+class CarCreate(View):
     template = 'cars/car_create_form.html'
 
+    def get(self, request):
+        form = CarForm()
+        return render(request, self.template, context={'form': form})
 
-class DayCreate(ObjectCreateMixin, View):
-    form_model = DayForm
+    def post(self, request):
+        bound_form = CarForm(request.POST)
+        if bound_form.is_valid():
+            new_obj = bound_form.save()
+            return redirect(new_obj)
+        return render(request, self.template, context={'form': bound_form})
+
+
+class DayCreate(View):
+    """Adds day to required car"""
+
     template = 'cars/day_create_form.html'
 
+    def get(self, request, id):
+        form = DayForm()
+        return render(request, self.template, context={'form': form, 'id': id})
 
-class MonthCreate(ObjectCreateMixin, View):
-    form_model = MonthForm
+    def post(self, request, id):
+        car = Car.objects.get(id=id)
+        date = request.POST['date']
+        post_month = car.month_set.get_or_create(date=create_month(date))[0]
+        bound_form = DayForm(request.POST)
+        if bound_form.is_valid():
+            new_obj = bound_form.save()
+            return redirect(new_obj)
+        return render(request, self.template, context={'form': bound_form})
+
+
+class MonthCreate(View):
     template = 'cars/month_create_form.html'
 
+    def get(self, request):
+        form = MonthForm()
+        return render(request, self.template, context={'form': form})
 
-class CarEdit(ObjectEditMixin, View):
+    def post(self, request):
+        bound_form = MonthForm(request.POST)
+        if bound_form.is_valid():
+            new_obj = bound_form.save()
+            return redirect(new_obj)
+        return render(request, self.template, context={'form': bound_form})
+
+
+class CarEdit(View):
     model = Car
     model_form = CarForm
     template = 'cars/car_edit_form.html'
 
+    def get(self, request, id):
+        obj = Car.objects.get(id=id)
+        bound_form = CarForm(instance=obj)
+        return render(request, self.template, context={'form': bound_form, 'car': obj})
 
-class DayEdit(ObjectEditMixin, View):
-    model = Day
-    model_form = DayEditForm
+    def post(self, request, id):
+        obj = Car.objects.get(id=id)
+        bound_form = CarForm(request.POST, instance=obj)
+
+        if bound_form.is_valid():
+            new_obj = bound_form.save()
+            return redirect(new_obj)
+        return render(request, self.template, context={'form': bound_form, 'car': obj})
+
+
+class DayEdit(View):
     template = 'cars/day_edit_form.html'
 
-    def get(self, request, slug):
-        obj = self.model.objects.get(slug__iexact=slug)
-        bound_form = self.model_form(instance=obj)
+    def get(self, request, id):
+        obj = Day.objects.get(id=id)
+        bound_form = DayForm(instance=obj)
         return render(request, self.template,
-                      context={'form': bound_form, self.model.__name__.lower(): obj})
+                      context={'form': bound_form, 'day': obj})
 
-    def post(self, request, slug):
-        obj = self.model.objects.get(slug__iexact=slug)
-        bound_form = self.model_form(request.POST, instance=obj)
+    def post(self, request, id):
+        obj = Day.objects.get(id=id)
+        bound_form = DayForm(request.POST, instance=obj)
         initial_income = obj.total_income
         initial_expenses = obj.total_expenses
         new_income = int(request.POST['total_income'])
@@ -83,5 +147,4 @@ class DayEdit(ObjectEditMixin, View):
         if bound_form.is_valid():
             new_obj = bound_form.save()
             return redirect(new_obj)
-        return render(request, self.template, context={'form': bound_form,
-                                                       self.model.__name__.lower(): obj})
+        return render(request, self.template, context={'form': bound_form, 'day': obj})

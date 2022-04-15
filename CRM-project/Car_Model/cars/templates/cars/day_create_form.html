@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block content %}
-  <form class="" action="{% url 'day_create_url' %}" method="post">
+  <form class="" action="{% url 'day_create_url' id %}" method="post">
     {% csrf_token %}
 
     {% for field in form %}

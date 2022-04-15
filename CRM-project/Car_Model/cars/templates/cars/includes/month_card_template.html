@@ -3,14 +3,16 @@
     {{ month.date }}
   </div>
   <div class="card-body">
-    <h5 class="card-title">{{ 'Total income' }}</h5>
+    <h3 class="card-title">{{ 'Car' }}</h3>
+    <p class="card-text">{{ month.car.title }}</p>
+    <h6 class="card-title">{{ 'Total income' }}</h6>
     <p class="card-text">{{ month.total_income }}</p>
-    <h5 class="card-title">{{ 'Total expenses' }}</h5>
+    <h6 class="card-title">{{ 'Total expenses' }}</h6>
     <p class="card-text">{{ month.total_expenses }}</p>
   </div>
   <div class="card-footer text-muted">
     Days:<br>
-    {% for day in month.days.all %}
+    {% for day in month.day_set.all %}
       <a href="{{ day.get_absolute_url }}">{{ day.date }}</a><br>
     {% endfor %}
   </div>
