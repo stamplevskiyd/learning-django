@@ -1,10 +1,10 @@
-import datetime
-
 from django.db import models
+from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.shortcuts import reverse
 from django.core.exceptions import ValidationError
 from time import time
+import datetime
 
 
 def create_default_month():
@@ -111,28 +111,25 @@ class Day(models.Model):
     def get_update_url(self):
         return reverse('day_edit_url', kwargs={'id': self.id})
 
-    def save(self, *args, **kwargs):
-        """Saves day object, adds it to month.
-        Can create new month if needed."""
-
-        month = self.month
-        if not month.day_set.filter(id=self.id):
-            """Creating new day object."""
-            super().save(*args, **kwargs)
-            month.day_set.add(self)
-            month.total_expenses += self.expenses
-            month.total_income += self.income
-        else:
-            """Modifying already added day."""
-            day = month.day_set.get(id=self.id)
-            month.total_expenses += self.expenses - day.expenses
-            month.total_income += self.income - day.income
-            super().save(*args, **kwargs)
-        month.save()
-
     def __str__(self):
         return '{}'.format(self.date)
 
+
+@receiver(post_save, sender=Day)
+def update_data(sender, instance, **kwargs):
+    month = instance.month
+    print(kwargs)
+    if not month.day_set.filter(id=instance.id):
+        """Creating new day object."""
+        month.day_set.add(instance)
+        month.total_expenses += instance.expenses
+        month.total_income += instance.income
+    else:
+        """Modifying already added day."""
+        day = month.day_set.get(id=instance.id)
+        month.total_expenses += instance.expenses - day.expenses
+        month.total_income += instance.income - day.income
+    month.save()
 
 class Amortization(models.Model):
     """Amortization class."""

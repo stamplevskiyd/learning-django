@@ -94,9 +94,8 @@ class DayCreate(View):
         bound_form = DayForm(request.POST)
         if bound_form.is_valid():
             new_obj = bound_form.save()
-            new_obj.month = post_month
-            new_obj.save()
-            car.recount_amortization()
+            post_month.day_set.add(new_obj)
+            post_month.save()
             return redirect(new_obj)
         return render(request, self.template, context={'form': bound_form})
 
@@ -168,12 +167,8 @@ class AmortizationCreate(View):
 
     def post(self, request, id):
         bound_form = AmortizationForm(request.POST)
-        car = Car.objects.get(id=id)
         if bound_form.is_valid():
             new_obj = bound_form.save()
-            new_obj.car = car
-            new_obj.save()
-            car.recount()
             return redirect(new_obj)
         return render(request, self.template, context={'form': bound_form})
 
