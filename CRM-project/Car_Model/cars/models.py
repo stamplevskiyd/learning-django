@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.shortcuts import reverse
 from django.core.exceptions import ValidationError
@@ -35,7 +35,6 @@ class Car(models.Model):
     def get_update_url(self):
         return reverse('car_edit_url', kwargs={'id': self.id})
 
-
     def recount(self):
         for month in self.month_set.all():
             month.total_income = 0
@@ -44,6 +43,29 @@ class Car(models.Model):
             month.total_profit = 0
             for day in month.day_set.all():
                 day.save()
+
+    def total_recount(self):
+        for month in self.month_set.all():
+            month.total_income = 0
+            month.total_expenses = 0
+            month.total_amortization = 0
+            month.total_profit = 0
+            for day in month.day_set.all():
+                day.amortization = 0
+                day.profit = 0
+                for am in self.amortization_set.all():
+                    day_count = 0
+                    for m in self.month_set.all():
+                        day_count += m.day_set.filter(date__gte=am.start_date, date__lt=am.end_date).count()
+                    if am.start_date <= day.date < am.end_date:
+                        day.amortization += am.money // day_count
+                day.profit = day.income - day.expenses - day.amortization
+                day.save()
+                month.total_income += day.income
+                month.total_expenses += day.expenses
+                month.total_amortization += day.amortization
+            month.total_profit = month.total_income - month.total_expenses - month.total_amortization
+            month.save()
 
     def __str__(self):
         return '{}'.format(self.title)
@@ -61,11 +83,6 @@ class Month(models.Model):
 
     def get_absolute_url(self):
         return reverse('month_detail_url', kwargs={'id': self.id})
-
-    def add_day_data(self, day):
-        self.total_income += day.income
-        self.total_expenses += day.expenses
-        self.save()
 
 
 class Day(models.Model):
@@ -93,7 +110,11 @@ def add_day_data(sender, instance, **kwargs):
     month = Month.objects.get(day__id=instance.id)  # они и так все уникальны
     if month == get_default_month():  # при создании шаблонного объекта случится дичь
         return
-    month.add_day_data(instance)
+    month.total_income += instance.income
+    month.total_expenses += instance.expenses
+    month.total_amortization += instance.amortization
+    month.total_profit += instance.income - instance.expenses - instance.amortization
+    month.save()
 
 
 class Amortization(models.Model):
@@ -109,3 +130,29 @@ class Amortization(models.Model):
 
     def get_delete_url(self):
         return reverse('amortization_delete_url', kwargs={'id': self.id})
+
+
+@receiver(post_save, sender=Amortization)
+def add_amortization(sender, instance, **kwargs):
+    if instance.car == get_default_car():
+        return
+    day_count = (instance.end_date - instance.start_date).days
+    money_per_day = instance.money // day_count
+    for month in instance.car.month_set.all():
+        for day in month.day_set.filter(date__gte=instance.start_date, date__lt=instance.end_date):
+            day.amortization += money_per_day
+            day.profit = day.income - day.expenses - day.amortization
+            day.save()
+
+
+@receiver(post_delete, sender=Amortization)
+def delete_amortization(sender, instance, **kwargs):
+    if instance.car == get_default_car():
+        return
+    day_count = (instance.end_date - instance.start_date).days
+    money_per_day = instance.money // day_count
+    for month in instance.car.month_set.all():
+        for day in month.day_set.filter(date__gte=instance.start_date, date__lt=instance.end_date):
+            day.amortization -= money_per_day
+            day.profit += day.amortization
+            day.save()

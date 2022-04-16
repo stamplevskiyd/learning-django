@@ -166,11 +166,13 @@ class AmortizationCreate(View):
         return render(request, self.template, context={'form': form, 'id': id})
 
     def post(self, request, id):
+        car = Car.objects.get(id=id)
         bound_form = AmortizationForm(request.POST)
         if bound_form.is_valid():
             new_obj = bound_form.save()
+            car.amortization_set.add(new_obj)
             return redirect(new_obj)
-        return render(request, self.template, context={'form': bound_form})
+        return render(request, self.template, context={'form': bound_form, 'id': id})
 
 
 class AmortizationDetail(View):
@@ -194,7 +196,5 @@ class AmortizationDelete(View):
 
     def post(self, request, id):
         obj = Amortization.objects.get(id=id)
-        car = obj.car
         obj.delete()
-        car.recount_amortization()
         return redirect(reverse(self.redirect_url))
