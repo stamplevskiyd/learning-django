@@ -95,7 +95,7 @@ class DayCreate(View):
         if bound_form.is_valid():
             new_obj = bound_form.save()
             post_month.day_set.add(new_obj)
-            post_month.save()
+            new_obj.save()
             return redirect(new_obj)
         return render(request, self.template, context={'form': bound_form})
 
