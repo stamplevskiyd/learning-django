@@ -84,6 +84,18 @@ class Month(models.Model):
     def get_absolute_url(self):
         return reverse('month_detail_url', kwargs={'id': self.id})
 
+    def recount(self):
+        self.total_amortization = 0
+        self.total_income = 0
+        self.total_profit = 0
+        self.total_expenses = 0
+        for day in self.day_set.all():
+            self.total_income += day.income
+            self.total_expenses += day.expenses
+            self.total_amortization += day.amortization
+        self.total_profit = self.total_income - self.total_expenses - self.total_amortization
+        self.save()
+
 
 class Day(models.Model):
     """Day class."""
@@ -110,11 +122,7 @@ def add_day_data(sender, instance, **kwargs):
     month = Month.objects.get(day__id=instance.id)  # они и так все уникальны
     if month == get_default_month():  # при создании шаблонного объекта случится дичь
         return
-    month.total_income += instance.income
-    month.total_expenses += instance.expenses
-    month.total_amortization += instance.amortization
-    month.total_profit += instance.income - instance.expenses - instance.amortization
-    month.save()
+    month.recount()
 
 
 class Amortization(models.Model):
@@ -134,7 +142,7 @@ class Amortization(models.Model):
 
 @receiver(post_save, sender=Amortization)
 def add_amortization(sender, instance, **kwargs):
-    if instance.car == get_default_car():
+    if instance.car_id == get_default_car():
         return
     day_count = (instance.end_date - instance.start_date).days
     money_per_day = instance.money // day_count
@@ -147,7 +155,7 @@ def add_amortization(sender, instance, **kwargs):
 
 @receiver(post_delete, sender=Amortization)
 def delete_amortization(sender, instance, **kwargs):
-    if instance.car == get_default_car():
+    if instance.car_id == get_default_car():
         return
     day_count = (instance.end_date - instance.start_date).days
     money_per_day = instance.money // day_count
@@ -156,3 +164,4 @@ def delete_amortization(sender, instance, **kwargs):
             day.amortization -= money_per_day
             day.profit += day.amortization
             day.save()
+            print(day.amortization)

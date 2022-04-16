@@ -171,6 +171,7 @@ class AmortizationCreate(View):
         if bound_form.is_valid():
             new_obj = bound_form.save()
             car.amortization_set.add(new_obj)
+            new_obj.save()
             return redirect(new_obj)
         return render(request, self.template, context={'form': bound_form, 'id': id})
 
